@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pg-init-script
+  namespace: assignment
+data:
+  init.sql: |
+    CREATE TABLE IF NOT EXISTS employees (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(50) NOT NULL,
+        role VARCHAR(50) NOT NULL,
+        department VARCHAR(50) NOT NULL
+    );
+    INSERT INTO employees (name, role, department) VALUES 
+    ('Alice', 'DevOps Lead', 'Infrastructure'),
+    ('Bob', 'Backend Engineer', 'Engineering'),
+    ('Charlie', 'FinOps Lead', 'Finance'),
+    ('Diana', 'Security Architect', 'SecOps'),
+    ('Evan', 'Product Director', 'Product')
+    ON CONFLICT DO NOTHING;
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-db
+  namespace: assignment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:15-alpine
+        env:
+        - name: POSTGRES_DB
+          valueFrom: { configMapKeyRef: { name: app-config, key: DB_NAME } }
+        - name: POSTGRES_USER
+          valueFrom: { configMapKeyRef: { name: app-config, key: DB_USER } }
+        - name: POSTGRES_PASSWORD
+          valueFrom: { secretKeyRef: { name: app-secret, key: DB_PASSWORD } }
+        ports:
+        - containerPort: 5432
+        volumeMounts:
+        - name: pgdata
+          mountPath: /var/lib/postgresql/data
+        - name: init-volume
+          mountPath: /docker-entrypoint-initdb.d
+      volumes:
+      - name: pgdata
+        persistentVolumeClaim: { claimName: postgres-pvc }
+      - name: init-volume
+        configMap:
+          name: pg-init-script
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+  namespace: assignment
+spec:
+  ports:
+  - port: 5432
+    targetPort: 5432
+  selector:
+    app: postgres
