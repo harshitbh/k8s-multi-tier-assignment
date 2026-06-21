@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
       - name: api
-        image: YOUR_DOCKERHUB_USERNAME/api-service:v1 # <--- Update with your username
+        image: hbhargava2/api-service:v1 # <--- Update with your username
         ports:
         - containerPort: 8000
         resources:
