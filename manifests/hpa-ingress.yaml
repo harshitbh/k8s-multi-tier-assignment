@@ -24,7 +24,7 @@ metadata:
   name: api-ingress
   namespace: assignment
 spec:
-  ingressClassName: nginx
+  ingressClassName: traefik
   rules:
   - http:
       paths:
