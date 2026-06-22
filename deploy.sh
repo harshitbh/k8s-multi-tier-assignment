@@ -63,6 +63,16 @@ kubectl apply -f manifests/app-secret.yaml
 echo "🗄️ Initializing Stateful PostgreSQL Cluster..."
 kubectl apply -f manifests/postgres.yaml
 
+# ===================================================================
+# 🛡️ MINIMAL ADDITION: POSTGRES POD REGISTRATION SAFETY CHECK
+# ===================================================================
+echo "⏳ Waiting for Kubernetes control plane to register the database pod..."
+until kubectl get pod postgres-db-0 -n assignment &>/dev/null; do
+    echo "⏱️ Pod object not registered yet. Re-checking in 2 seconds..."
+    sleep 2
+done
+# ===================================================================
+
 # 9. Wait loop engine for database pod readiness before launching the API
 echo "⏱️ Waiting for database pod to reach a healthy status..."
 kubectl wait --namespace=assignment \
@@ -74,6 +84,20 @@ echo "⚡ Deploying stateless API (4 replicas) and Routing Engine..."
 kubectl apply -f manifests/api.yaml
 kubectl apply -f manifests/hpa-ingress.yaml
 
+# ===================================================================
+# 📥 MINIMAL ADDITION: AUTOMATED K9S MONITORING SETUP
+# ===================================================================
+if ! command -v k9s &> /dev/null; then
+    echo "📥 Installing K9s Terminal Monitoring Interface..."
+    wget -q https://github.com/derailed/k9s/releases/latest/download/k9s_Linux_amd64.tar.gz
+    tar -xzf k9s_Linux_amd64.tar.gz k9s
+    sudo mv k9s /usr/local/bin/
+    rm -f k9s_Linux_amd64.tar.gz
+    echo "✅ K9s Monitoring Engine compiled successfully."
+fi
+# ===================================================================
+
 echo "===================================================="
 echo "✅ DEPLOYMENT SYSTEM ONLINE AND READY FOR EVALUATION!"
+echo "👉 Type 'k9s' in your terminal to view the dashboard."
 echo "===================================================="
