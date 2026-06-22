@@ -1,4 +1,16 @@
 apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+  namespace: assignment
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
 kind: ConfigMap
 metadata:
   name: pg-init-script
@@ -20,11 +32,12 @@ data:
     ON CONFLICT DO NOTHING;
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet # Corrected to stateful type to guarantee data persistence
 metadata:
   name: postgres-db
   namespace: assignment
 spec:
+  serviceName: "postgres-service"
   replicas: 1
   selector:
     matchLabels:

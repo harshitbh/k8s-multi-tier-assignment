@@ -20,11 +20,11 @@ spec:
     spec:
       containers:
       - name: api
-        image: hbhargava2/api-service:v1 # <--- Update with your username
+        image: hbhargava2/api-service:v2
         ports:
         - containerPort: 8000
         resources:
-          # FinOps Optimization Footprint margins
+          # FinOps Constraint Limits Optimization Boundaries
           requests:
             memory: "32Mi"
             cpu: "40m"
