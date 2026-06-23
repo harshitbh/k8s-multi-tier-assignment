@@ -2,33 +2,6 @@
 set -e
 
 echo "===================================================="
-echo "📦 PHASE 0: SYSTEM INITIALIZATION & PROJECT FETCHING"
-echo "===================================================="
-
-# Check and setup Git environment dependency dynamically
-echo "🌿 Checking Git availability..."
-if ! command -v git &> /dev/null; then
-    echo "📥 Installing Git core utilities engine..."
-    sudo dnf install git -y
-else
-    echo "✅ Git execution engine is already active."
-fi
-
-# Automate repository downloading safely
-REPO_DIR="k8s-multi-tier-assignment"
-REPO_URL="https://github.com/harshitbh/k8s-multi-tier-assignment.git"
-
-if [ ! -d "$REPO_DIR" ]; then
-    echo "📥 Cloning project repository fresh from cloud source..."
-    git clone "$REPO_URL"
-    cd "$REPO_DIR"
-else
-    echo "🔄 Existing project workspace detected. Syncing head changes..."
-    cd "$REPO_DIR"
-    git pull origin main || echo "⚠️ Working directory detached or branch mismatched. Proceeding with active directory content."
-fi
-
-echo "===================================================="
 echo "🛠️  PHASE 1: INSTANCE UTILITIES & CLUSTER TOOLING SETUP"
 echo "===================================================="
 
