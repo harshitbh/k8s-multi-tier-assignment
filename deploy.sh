@@ -2,6 +2,33 @@
 set -e
 
 echo "===================================================="
+echo "📦 PHASE 0: SYSTEM INITIALIZATION & PROJECT FETCHING"
+echo "===================================================="
+
+# Check and setup Git environment dependency dynamically
+echo "🌿 Checking Git availability..."
+if ! command -v git &> /dev/null; then
+    echo "📥 Installing Git core utilities engine..."
+    sudo dnf install git -y
+else
+    echo "✅ Git execution engine is already active."
+fi
+
+# Automate repository downloading safely
+REPO_DIR="k8s-multi-tier-assignment"
+REPO_URL="https://github.com/harshitbh/k8s-multi-tier-assignment.git"
+
+if [ ! -d "$REPO_DIR" ]; then
+    echo "📥 Cloning project repository fresh from cloud source..."
+    git clone "$REPO_URL"
+    cd "$REPO_DIR"
+else
+    echo "🔄 Existing project workspace detected. Syncing head changes..."
+    cd "$REPO_DIR"
+    git pull origin main || echo "⚠️ Working directory detached or branch mismatched. Proceeding with active directory content."
+fi
+
+echo "===================================================="
 echo "🛠️  PHASE 1: INSTANCE UTILITIES & CLUSTER TOOLING SETUP"
 echo "===================================================="
 
@@ -42,6 +69,23 @@ echo "===================================================="
 echo "🔨 Compiling Docker image locally from active root path..."
 sudo docker build -t hbhargava2/api-service:v2 .
 
+# ===================================================================
+# 🔑 SECURITY ENGINE: AUTHENTICATE AND PUSH TO DOCKER HUB REGISTRY
+# ===================================================================
+echo "🔐 Authenticating with public cloud registry..."
+if [ -n "$DOCKER_USERNAME" ] && [ -n "$DOCKER_PASSWORD" ]; then
+    # 'sudo -E' passes your exported terminal variables directly into the root command context
+    echo "$DOCKER_PASSWORD" | sudo -E docker login -u "$DOCKER_USERNAME" --password-stdin
+    
+    echo "📤 Synchronizing and pushing image to remote Docker Hub..."
+    sudo -E docker push hbhargava2/api-service:v2
+else
+    echo "❌ ERROR: DOCKER_USERNAME or DOCKER_PASSWORD is not set in your terminal environment!"
+    echo "👉 Please run 'export DOCKER_USERNAME=...' and 'export DOCKER_PASSWORD=...' before executing this script."
+    exit 1
+fi
+# ===================================================================
+
 # 5. Force import the image directly into K3s containerd local cache layer to bypass Docker Hub
 echo "📦 Injecting image directly into K3s internal registry archive cache..."
 sudo docker save hbhargava2/api-service:v2 | sudo k3s ctr images import -
@@ -64,7 +108,7 @@ echo "🗄️ Initializing Stateful PostgreSQL Cluster..."
 kubectl apply -f manifests/postgres.yaml
 
 # ===================================================================
-# 🛡️ MINIMAL ADDITION: POSTGRES POD REGISTRATION SAFETY CHECK
+# 🛡️ POSTGRES POD REGISTRATION SAFETY CHECK
 # ===================================================================
 echo "⏳ Waiting for Kubernetes control plane to register the database pod..."
 until kubectl get pod postgres-db-0 -n assignment &>/dev/null; do
@@ -85,7 +129,7 @@ kubectl apply -f manifests/api.yaml
 kubectl apply -f manifests/hpa-ingress.yaml
 
 # ===================================================================
-# 📥 MINIMAL ADDITION: AUTOMATED K9S MONITORING SETUP
+# 📥 AUTOMATED K9S MONITORING SETUP
 # ===================================================================
 if ! command -v k9s &> /dev/null; then
     echo "📥 Installing K9s Terminal Monitoring Interface..."
