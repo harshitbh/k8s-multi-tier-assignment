@@ -7,7 +7,7 @@ This repository contains the complete source code, deployment manifests, and ope
 ## 🔗 Core Delivery Index Links
 * Code Repository URL: [https://github.com/harshitbh/k8s-multi-tier-assignment](https://github.com/harshitbh/k8s-multi-tier-assignment)
 * Docker Hub Target Image URL: [https://hub.docker.com/r/hbhargava2/api-service/tags](https://hub.docker.com/r/hbhargava2/api-service/tags)
-* Service API Tier Public URL: [http://54.196.28.22/employees](http://54.196.28.22/employees) (Note: Cleaned up post AWS validation)
+* Service API Tier Public URL: [http://54.196.28.222/employees](http://54.196.28.222/employees) (Note: Cleaned up post AWS validation)
 
 ---
 
